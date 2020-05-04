@@ -2,24 +2,24 @@ import numpy as np
 from numpy import ceil, sqrt, log2
 from collections import Counter, defaultdict
 
-def sqrt_space(f, s0, n):
-    iters_bef_checkpoint = int(ceil(sqrt(n)))
+def sqrt_space(f, s0, N):
+    iters_bef_checkpoint = int(ceil(sqrt(N)))
     memory = defaultdict(float)
 
-    s = s0
+    s = s0 
     t = 0
-    while t < n:
+    while t < N:
+        s = f(s) # don't include input as an activation to be stored
         if t % iters_bef_checkpoint == 0:
             memory[t] = s
-        s = f(s)
         t += 1
     
-    pos = n
+    pos = N
     k = iters_bef_checkpoint
     first_checkpoint_index = iters_bef_checkpoint
 
     while pos >= first_checkpoint_index: # at equality only first chunk remains to be computed
-        num_steps = ((n % k) or k) if pos == n else k
+        num_steps = ((N % k) or k) if pos == N else k
         for s in reversed(step(f, memory[pos-num_steps], num_steps)):
             yield s
             
@@ -44,7 +44,7 @@ def test(N):
         calls[s] += 1
         return s+1
 
-    assert list(sqrt_space(layer, 0, N)) == list(reversed(range(N)))
+    assert list(sqrt_space(layer, 0, N)) == list(reversed(range(1, N+1)))
     # print(list(sqrt_space(layer, 0, N)))
     np.testing.assert_array_equal([1 <= num_calls <=2 for layer, num_calls in calls.items()],[True for _ in range(N)]) 
 
